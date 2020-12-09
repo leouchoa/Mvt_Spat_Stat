@@ -5,6 +5,7 @@ library(ggplot2)
 library(tidyr)
 library(ggmap)
 library(viridis)
+library(soiltexture)
 
 #krig_grid of leng 150 is good
 
@@ -389,6 +390,55 @@ pred_map_silte_same_scale_with_size <-
 comp_pred_nrow_3_no_axis_same_scale_with_size <- gridExtra::grid.arrange(pred_map_areia_same_scale_with_size,pred_map_argila_same_scale_with_size,pred_map_silte_same_scale_with_size)
 
 ggsave("comp_pred_nrow_3_no_axis_same_scale_with_size.pdf",plot = comp_pred_nrow_3_no_axis_same_scale_with_size,width = 8.27,height = 11.69)
+
+
+# --------- Prediction label map ----------
+
+soil_dts_preds_aux <- 
+  cbind(
+    setNames(soil_dts_preds[,1:3]*100,c("SAND","CLAY","SILT")),
+    soil_dts_preds[,4:5]
+    )
+
+class_labels <- as.data.frame(
+  TT.points.in.classes(soil_dts_preds_aux[,1:3],class.sys= "SiBCS13.TT")
+  )
+
+
+aux_tmp <- setNames(soil_dts_preds[soil_dts_preds$comp_01 > 0.60,1:3],c("SAND","CLAY","SILT"))
+
+apply(TT.points.in.classes(aux_tmp * 100,class.sys= "SiBCS13.TT"),2,table)
+
+
+soil_dts_preds_v2 <- cbind(soil_dts_preds,label = apply(class_labels,1,function(x){
+  aux_term <- colnames(class_labels)[which(as.logical(x))];
+  ifelse(length(aux_term) != 1,paste0(aux_term,collapse = "/"),aux_term)
+}))
+
+ggmap(ctb_map_image_unique_loc_constrained_v2) + 
+  # geom_point(data = setNames(as.data.frame(soil_dts@coords),c("coord_x","coord_y")),mapping = aes(x = coord_x,y = coord_y,size = alr_transformed_with_locations_UNIQUE$prop1_areia)) + 
+  geom_tile(data = soil_dts_preds_v2[,c("coord_x","coord_y","label")], 
+            mapping = aes(coord_x,coord_y, fill = label,alpha = 0.01)
+  ) + 
+  scale_fill_viridis_d() +
+  guides(size = FALSE,alpha = FALSE) + 
+  # guides(fill=guide_legend(title="Proporção \n de Areia")) +
+  # guides(fill=guide_legend(title="")) +
+  labs(
+    x = "",
+    y = "",
+    title = "Predição Composicional de Classificação de Solo",
+    # fill = "Classi \n ficação"
+    fill = "Classificação"
+  ) + 
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()
+  )
+
 
 
 
