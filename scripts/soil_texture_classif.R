@@ -2,6 +2,7 @@ library(soiltexture)
 
 alr_transformed_with_locations_UNIQUE <- read.csv("~/Documents/git/Mvt_Spat_Stat/scripts/discussion_misc/data/alr_transformed_with_locations_UNIQUE.csv", row.names=NULL)
 
+
 soil_dts <- alr_transformed_with_locations_UNIQUE[,1:4]
 
 
@@ -20,3 +21,7 @@ apply(class_label,1,function(x){
 class_label$classif <- aux_res
 
 TT.plot( class.sys = "SiBCS13.TT" , lang = "pt")
+
+
+
+

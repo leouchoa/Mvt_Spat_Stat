@@ -701,15 +701,18 @@ canit_dm <- gridExtra::grid.arrange(comp_pred_nrow_3_no_axis_same_scale_with_siz
 # --------- New data points ----------
 
 
-NEW_alr_transformed_with_locations_UNIQUE <- read.csv("~/Documents/git/Mvt_Spat_Stat/scripts/discussion_misc/data/NEW_alr_transformed_with_locations_UNIQUE.csv", row.names=NULL)[,c(4:8,10,11)]
+NEW_alr_transformed_with_locations_UNIQUE <- read.csv("data/NEW_alr_transformed_with_locations_UNIQUE.csv", row.names=NULL)[,c(4:8,10,11)]
 
 NEW_obs_soil_dts_preds <- compositional_biwm_krig(
   biwm_fit = soil_dts_fit,
   krig_locations = NEW_alr_transformed_with_locations_UNIQUE[,6:7],
   fit_locations = coordinates(soil_dts),
   obs_matrix = soil_dts@data,
-  nus = nus_vec
+  nus = nus_vec,
+  nug_vec = nug_vec
 )
+
+
 
 # the error is large
 colSums(NEW_obs_soil_dts_preds[,1:3] - NEW_alr_transformed_with_locations_UNIQUE[,1:3])
