@@ -678,6 +678,29 @@ canit_dm <- gridExtra::grid.arrange(comp_pred_nrow_3_no_axis_same_scale_with_siz
 
 NEW_alr_transformed_with_locations_UNIQUE <- read.csv("~/Documents/git/Mvt_Spat_Stat/scripts/discussion_misc/data/NEW_alr_transformed_with_locations_UNIQUE.csv", row.names=NULL)[,c(4:8,10,11)]
 
+
+ggmap(ctb_map_image_unique_loc_constrained_v2) + 
+  geom_point(
+    data = setNames(
+      as.data.frame(soil_dts@coords),
+      c("coord_x","coord_y")
+    ), 
+    mapping = aes(x = coord_x,y = coord_y)
+    ) + 
+  geom_text(
+    data = cbind(
+      NEW_alr_transformed_with_locations_UNIQUE,
+      id = seq_len(nrow(NEW_alr_transformed_with_locations_UNIQUE))
+    ),
+    mapping = aes(coord_x,coord_y,size = 2.5,label = id)
+      ) + 
+  guides(size = FALSE) + 
+  labs(
+    x = "",
+    y = ""
+  )
+
+
 NEW_obs_soil_dts_preds <- compositional_biwm_krig(
   biwm_fit = soil_dts_fit,
   krig_locations = NEW_alr_transformed_with_locations_UNIQUE[,6:7],
@@ -728,8 +751,7 @@ soil_dts_preds_v2_NEW <- cbind(NEW_obs_soil_dts_preds_cmp,label = as.factor(appl
 
 
 new_obs_true_soil_label <- 
-
-as.data.frame(
+  as.data.frame(
   TT.points.in.classes(
     setNames(
       NEW_alr_transformed_with_locations_UNIQUE[,1:3] * 100,
@@ -760,3 +782,56 @@ apply(
   MARGIN = 2,
   FUN = hist
   )
+
+
+# ---- ggtern use ----
+
+library(ggtern)
+library(ggrepel)
+
+gridExtra::grid.arrange(
+  ggtern(
+    data = setNames(soil_dts_preds_v2_NEW[,1:3] / 100,
+                    c("Areia", "Argila", "Silte")
+    ),
+    mapping = aes(Areia,Argila,Silte)
+  ) +
+    geom_point(),
+  ggtern(
+    data = cbind(
+      setNames(NEW_alr_transformed_with_locations_UNIQUE[,1:3],
+               c("Areia", "Argila", "Silte")
+      ),
+      id = seq(1:nrow(NEW_alr_transformed_with_locations_UNIQUE))
+    ),
+    mapping = aes(Areia,Argila,Silte)
+  ) +
+    geom_point()
+)
+
+
+ggtern_p1 <- ggtern(
+  data = cbind(
+    setNames(soil_dts_preds_v2_NEW[,1:3] / 100,
+             c("Areia", "Argila", "Silte")
+    ),
+    id = seq(1:nrow(NEW_alr_transformed_with_locations_UNIQUE))
+  ),
+  mapping = aes(Areia,Argila,Silte, label = id)
+) +
+  # geom_point() +
+  geom_text()
+
+ggtern_p2 <- ggtern(
+  data = cbind(
+    setNames(NEW_alr_transformed_with_locations_UNIQUE[,1:3],
+             c("Areia", "Argila", "Silte")
+    ),
+    id = seq(1:nrow(NEW_alr_transformed_with_locations_UNIQUE))
+  ),
+  mapping = aes(Areia,Argila,Silte,label = id)
+) +
+  # geom_point() + 
+  geom_text()
+
+ggtern_p2
