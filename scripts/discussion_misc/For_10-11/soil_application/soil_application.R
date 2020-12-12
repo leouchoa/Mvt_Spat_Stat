@@ -832,6 +832,58 @@ ggtern_p2 <- ggtern(
   mapping = aes(Areia,Argila,Silte,label = id)
 ) +
   # geom_point() + 
-  geom_text()
+  geom_text() + 
+  labs(
+    title = "Composições em CTB0809"
+  )
 
 ggtern_p2
+
+
+# ----- Formating Dissertation text prediction results tbl ----
+
+xtable::xtable(
+  
+  setNames(
+    as.data.frame(
+      cbind(
+        NEW_alr_transformed_with_locations_UNIQUE[,1],
+        soil_dts_preds_v2_NEW[,1] / 100,
+        sigbar_hat_approx_NEW[,1]
+      )
+    ),
+    c("Areia Observada", "Areia Predita", "Erro de Predição")
+  )
+  
+)
+
+xtable::xtable(
+  
+  setNames(
+    as.data.frame(
+      cbind(
+        NEW_alr_transformed_with_locations_UNIQUE[,2],
+        soil_dts_preds_v2_NEW[,2] / 100,
+        sigbar_hat_approx_NEW[,2]
+      )
+    ),
+    c("Argila Observada", "Argila Predita", "Erro de Predição")
+  )
+  
+)
+
+xtable::xtable(
+  
+  setNames(
+    as.data.frame(
+      cbind(
+        NEW_alr_transformed_with_locations_UNIQUE[,3],
+        soil_dts_preds_v2_NEW[,3] / 100,
+        sigbar_hat_approx_NEW[,3]
+      )
+    ),
+    c("Silte Observada", "Silte Predita", "Erro de Predição")
+  )
+  
+)
+
