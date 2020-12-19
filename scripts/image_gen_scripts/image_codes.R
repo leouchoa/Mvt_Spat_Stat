@@ -2,11 +2,11 @@
 
 # library(viridis)
 library(tidyverse)
-library(patchwork)
-library(ggforce)
 library(RandomFields)
+library(ggforce)
 library(gstat)
 library(sp)
+library(patchwork)
 # library(ggtern) #please don't load this
 theme_set(theme_minimal())
 options(ggplot2.continuous.colour="viridis")
@@ -213,3 +213,95 @@ biwm_sim_many_rho_plot()
 biwm_sim_many_a_plot()
 biwm_sim_many_nus_plot() #not viable for the moment
 biwm_sim_many_sigmas_plot() #not viable for the moment
+
+
+
+# ------ Matérn simulation and krig ----
+
+set.seed(123)
+
+x <- seq(0, 1, len=100)
+model <- RMmatern(nu = 1,var = 3,scale = 0.3)
+z <- RFsimulate(model=model, x, x)
+# plot(z)
+
+ggplot(
+  data = cbind(
+    setNames(as.data.frame(coordinates(z)),c("coord_x","coord_y")),
+    z@data
+  ),
+  mapping = aes(coord_x,coord_y,fill = variable1)
+    ) + 
+  geom_tile() + 
+  labs(
+    x = "",
+    y = "",
+    fill = "Valor"
+  ) + 
+  scale_fill_viridis_c() + 
+  theme_minimal()
+  
+idx <- sample.int(nrow(coordinates(z)),85)
+
+sampled_df <-cbind(coordinates(z)[idx,],
+                   z = z@data[idx,]) 
+
+empVariog <- variog(coords = sampled_df[,1:2], data = sampled_df[,3])
+
+ggplot(
+  data = data.frame(x = empVariog$u,y = empVariog$v),
+  mapping = aes(x,y)
+) + 
+  geom_point() + 
+  theme_minimal() + 
+  labs(
+    x = "h",
+    y = expression(2*gamma)
+  )
+
+
+contrast <- variofit(empVariog, 
+                     ini.cov.pars = c(sigma2 = 3, phi = 1),
+                     cov.model = "matern", fix.nugget = FALSE
+)
+
+prep <- krige.control(type.krige = "ok",  
+                      cov.model = contrast$cov.model,
+                      cov.pars = contrast$cov.pars,
+                      nugget = contrast$nugget)
+loci <- expand.grid(X = x,
+                    Y = x)
+kc <- krige.conv(coords = sampled_df[,1:2], data = sampled_df[,3], 
+                 locations = loci,
+                 krige = prep)
+
+pred_map_df <- data.frame(loci,pred = kc$predict)
+predvar_map_df <- data.frame(loci,pred_var = kc$krige.var)
+
+
+ggplot(
+  data = pred_map_df,
+  mapping = aes(X,Y,fill = pred)
+) + 
+  geom_tile() + 
+  labs(
+    x = "",
+    y = "",
+    fill = "Predição"
+  ) + 
+  scale_fill_viridis_c() + 
+  theme_minimal()
+
+ggplot(
+  data = predvar_map_df,
+  mapping = aes(X,Y,fill = pred_var)
+) + 
+  geom_tile() + 
+  labs(
+    x = "",
+    y = "",
+    fill = "Variância"
+  ) + 
+  scale_fill_viridis_c() + 
+  theme_minimal()
+
