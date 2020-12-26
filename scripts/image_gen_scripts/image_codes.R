@@ -265,7 +265,7 @@ contrast <- variofit(empVariog,
                      cov.model = "matern", fix.nugget = FALSE
 )
 
-prep <- krige.control(type.krige = "ok",  
+prep <- krige.control(type.krige = "sk",  
                       cov.model = contrast$cov.model,
                       cov.pars = contrast$cov.pars,
                       nugget = contrast$nugget)
